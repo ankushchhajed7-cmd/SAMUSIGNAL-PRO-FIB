@@ -1,0 +1,234 @@
+{
+ "pairs": 12,
+ "period": [
+  "2026-09-19T06:45:00.000Z",
+  "2026-10-23T07:25:00.000Z"
+ ],
+ "split": "2026-10-09T16:45:00.000Z",
+ "cfg": {},
+ "inSample": {
+  "n": 32,
+  "win": 12.5,
+  "expR": -0.644,
+  "pf": 0.26,
+  "maxDD_R": 20.61,
+  "avgMAE_R": 1.25,
+  "avgMFE_R": 0.88,
+  "avgCostPips": 1.92,
+  "usd001": -13.31,
+  "reliable": "yes"
+ },
+ "outOfSample": {
+  "n": 33,
+  "win": 27.3,
+  "expR": 0.057,
+  "pf": 1.08,
+  "maxDD_R": 7,
+  "avgMAE_R": 1.14,
+  "avgMFE_R": 1.14,
+  "avgCostPips": 2.02,
+  "usd001": 3.06,
+  "reliable": "yes"
+ },
+ "oosBySetup": {
+  "BREAKOUT": {
+   "n": 22,
+   "win": 27.3,
+   "expR": 0.201,
+   "pf": 1.28,
+   "maxDD_R": 5,
+   "avgMAE_R": 1.23,
+   "avgMFE_R": 1.27,
+   "avgCostPips": 2.16,
+   "usd001": 2.7,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "PULLBACK": {
+   "n": 11,
+   "win": 27.3,
+   "expR": -0.232,
+   "pf": 0.68,
+   "maxDD_R": 7,
+   "avgMAE_R": 0.94,
+   "avgMFE_R": 0.87,
+   "avgCostPips": 1.74,
+   "usd001": 0.36,
+   "reliable": "Not enough data for a reliable conclusion"
+  }
+ },
+ "oosBySession": {
+  "NY": {
+   "n": 10,
+   "win": 20,
+   "expR": -0.417,
+   "pf": 0.48,
+   "maxDD_R": 8,
+   "avgMAE_R": 0.97,
+   "avgMFE_R": 0.86,
+   "avgCostPips": 2.11,
+   "usd001": 0.77,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "Asia": {
+   "n": 9,
+   "win": 33.3,
+   "expR": 0.082,
+   "pf": 1.12,
+   "maxDD_R": 3,
+   "avgMAE_R": 0.92,
+   "avgMFE_R": 1.02,
+   "avgCostPips": 2.03,
+   "usd001": 1.62,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "London": {
+   "n": 14,
+   "win": 28.6,
+   "expR": 0.378,
+   "pf": 1.53,
+   "maxDD_R": 3,
+   "avgMAE_R": 1.39,
+   "avgMFE_R": 1.42,
+   "avgCostPips": 1.95,
+   "usd001": 0.66,
+   "reliable": "Not enough data for a reliable conclusion"
+  }
+ },
+ "oosByPair": {
+  "EUR/USD": {
+   "n": 6,
+   "win": 0,
+   "expR": -1,
+   "pf": 0,
+   "maxDD_R": 6,
+   "avgMAE_R": 1.11,
+   "avgMFE_R": 0.36,
+   "avgCostPips": 1.2,
+   "usd001": -6.07,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "GBP/USD": {
+   "n": 2,
+   "win": 100,
+   "expR": 2.189,
+   "pf": null,
+   "maxDD_R": 0,
+   "avgMAE_R": 0.42,
+   "avgMFE_R": 2.3,
+   "avgCostPips": 1.5,
+   "usd001": 5.5,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "USD/JPY": {
+   "n": 5,
+   "win": 0,
+   "expR": -1,
+   "pf": 0,
+   "maxDD_R": 5,
+   "avgMAE_R": 1.25,
+   "avgMFE_R": 0.29,
+   "avgCostPips": 1.5,
+   "usd001": -3.62,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "AUD/USD": {
+   "n": 2,
+   "win": 50,
+   "expR": 1.759,
+   "pf": 4.52,
+   "maxDD_R": 1,
+   "avgMAE_R": 0.72,
+   "avgMFE_R": 3.17,
+   "avgCostPips": 1.5,
+   "usd001": 1.31,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "EUR/JPY": {
+   "n": 4,
+   "win": 25,
+   "expR": 0.124,
+   "pf": 1.17,
+   "maxDD_R": 2,
+   "avgMAE_R": 0.97,
+   "avgMFE_R": 1,
+   "avgCostPips": 2.2,
+   "usd001": 0.48,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "EUR/AUD": {
+   "n": 3,
+   "win": 66.7,
+   "expR": 1.081,
+   "pf": 4.24,
+   "maxDD_R": 1,
+   "avgMAE_R": 0.76,
+   "avgMFE_R": 2.25,
+   "avgCostPips": 2.6,
+   "usd001": 1.89,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "GBP/JPY": {
+   "n": 4,
+   "win": 50,
+   "expR": 0.761,
+   "pf": 2.52,
+   "maxDD_R": 1,
+   "avgMAE_R": 2.2,
+   "avgMFE_R": 1.32,
+   "avgCostPips": 2.8,
+   "usd001": 5.27,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "GBP/CAD": {
+   "n": 1,
+   "win": 0,
+   "expR": -1,
+   "pf": 0,
+   "maxDD_R": 1,
+   "avgMAE_R": 1.03,
+   "avgMFE_R": 0.56,
+   "avgCostPips": 2.6,
+   "usd001": -0.69,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "GBP/NZD": {
+   "n": 3,
+   "win": 0,
+   "expR": -1,
+   "pf": 0,
+   "maxDD_R": 3,
+   "avgMAE_R": 1.11,
+   "avgMFE_R": 0.64,
+   "avgCostPips": 2.6,
+   "usd001": -2.1,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "AUD/CAD": {
+   "n": 2,
+   "win": 50,
+   "expR": 1.596,
+   "pf": 4.19,
+   "maxDD_R": 1,
+   "avgMAE_R": 0.94,
+   "avgMFE_R": 2.25,
+   "avgCostPips": 2.6,
+   "usd001": 1.54,
+   "reliable": "Not enough data for a reliable conclusion"
+  },
+  "NZD/CAD": {
+   "n": 1,
+   "win": 0,
+   "expR": -1,
+   "pf": 0,
+   "maxDD_R": 1,
+   "avgMAE_R": 1.12,
+   "avgMFE_R": 0.02,
+   "avgCostPips": 2.6,
+   "usd001": -0.46,
+   "reliable": "Not enough data for a reliable conclusion"
+  }
+ },
+ "orderType": "MARKET (confirmation ke baad agli candle ka open)",
+ "ea": "in-sample 32 trade: jeet 66%, kul -$12.70 (-$0.40/trade) \u00b7 out-of-sample 33 trade: jeet 67%, kul -$13.00 (-$0.39/trade)",
+ "verdict": "Abhi koi saabit fayda (edge) NAHI. Fib ke apne SL/TP pe in-sample bura (-0.64R/trade), out-of-sample lagbhag barabar (+0.06R, 33 trade \u2014 bharosemand nateeje ke liye kam). PERSONAL FX Strategy 2 ke niyam pe dono hisson me nuksaan (~-$0.40/trade). Data sirf ~5 hafte, 12 pair (TwelveData). Pullback setup bahut kam bante hain. Ye app signal + seekhne ke liye hai \u2014 paisa lagane se pehle zyada data (MT5 feed / live records) se jaanch zaroori."
+}
