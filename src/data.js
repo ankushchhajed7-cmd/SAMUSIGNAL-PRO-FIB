@@ -9,6 +9,8 @@ import {SPECS} from './symbols.js';
 import {TF_MS} from './engine.js';
 
 const SAMU = k => { try{ const v = localStorage.getItem('samu_' + k); return v === null ? undefined : JSON.parse(v) }catch(e){ return undefined } };
+/* SamuSignal + PERSONAL FX + Data Feed EA ka default Firebase (public URL, secret nahi — auth alag) */
+export const DEFAULT_FB = 'https://forexdiagnosis-default-rtdb.asia-southeast1.firebasedatabase.app';
 export const LS = {
   get(k, d){ try{ const v = localStorage.getItem('sfib_' + k); return v === null ? d : JSON.parse(v) }catch(e){ return d } },
   set(k, v){ try{ localStorage.setItem('sfib_' + k, JSON.stringify(v)) }catch(e){} }
@@ -20,7 +22,7 @@ export function settings(){
   const pick = (k, samuKey) => (ov[k] !== undefined && ov[k] !== '') ? ov[k] : SAMU(samuKey);
   return {
     tdKey: pick('tdKey', 'key') || '',
-    fbUrl: pick('fbUrl', 'fbUrl') || '',
+    fbUrl: pick('fbUrl', 'fbUrl') || DEFAULT_FB,                 /* SamuSignal se na mile to PERSONAL FX / Data Feed wala default */
     fbAuth: pick('fbAuth', 'fbAuth') || '',
     tgTok: pick('tgTok', 'tgTok') || '',
     tgId: pick('tgId', 'tgId') || '',
