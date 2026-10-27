@@ -23,8 +23,27 @@ Fibonacci **61.8% retracement** signal app, sirf **Forex** (Gold / Silver / BTC 
   (EA heartbeat me ye niyam nahi aate). Signal ka SL/TP EA pe apne aap nahi lagta.
 - **Records:** "Signal bane" aur "Maine liye" **alag**, nateeje kabhi mile-jule nahi. 30 se kam = "Not enough data".
 
+## 📈 Chart Analysis (v0.2.0) — SamuSignal jaisa faisla + Fib bhaav
+- Pair chuno → **📸 AUTO ANALYZE** (MT5 feed, nahi to TwelveData). Disha / NO TRADE **SamuSignal v10.6.6** ke niyam se
+  (`src/mtf.js`, mtfRead + mtfGate copy): 15m trend + 1H flat = "naya trend" → order; purana trend / rest / ulte / range = NO TRADE.
+- Bhaav **Fib se** (AI nahi): **LIMIT = 15m Fib 61.8%** (trend ki disha me pullback), **STOP = swing ke paar + (0.35 × ATR5 + spread)**.
+  Doori ki shart SamuSignal jaisi. Dono order ek **batch** → PERSONAL FX (jo pehle bhare, baaki cancel; 60 min expiry), demo + real tick.
+- Card: trends, Fib anchors, 61.8% level, LIMIT/STOP bhaav + live se doori, +$1 andaza. Records: Strategy 2 niyam (−$3 / +$3 / lock) se hisaab,
+  "sirf analysis" aur "bheja / maine liya" alag.
+- Backtest (12 pair, ~22 din, SamuSignal ke 1,494 naya-trend analysis, niyam pehle se tay):
+
+| | Level Engine (SamuSignal) | Fib 61.8% + swing STOP |
+|---|---|---|
+| Bhare | 815 | 289 |
+| +$1 pehle (−$5 se) | 91% | 93% |
+| DD median / p75 | $1.04 / $2.52 | $0.92 / $2.48 |
+| Strategy 2 $/trade (hafta A / B) | +0.19 / +0.15 | +0.21 / +0.26 |
+
+  Fib thoda behtar per trade, lekin ~⅓ trade aur farq chhota — **saabit fayda nahi**, pehle demo pe parkho.
+- "🔍 Confirm" tab = purana tarika (zone → rejection candle → MARKET).
+
 ## Tests
-`npm test` (Node 20+) — 20 tests: incomplete candle, non-repainting pivot, Fib direction (up/down), touch ≠ signal,
+`npm test` (Node 20+) — 26 tests (Chart Analysis ke 6 naye: naya/purana/rest gate, 61.8% LIMIT neeche / STOP upar, doori, NO TRADE): incomplete candle, non-repainting pivot, Fib direction (up/down), touch ≠ signal,
 BUY/SELL rejection, wick ≠ breakout, close + retest, 1H/15m conflict, spread/room reject, expiry, invalidation, stale data, lookahead.
 
 ## Backtest (imaandaar)

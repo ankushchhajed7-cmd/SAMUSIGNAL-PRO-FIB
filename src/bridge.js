@@ -26,3 +26,21 @@ export async function sendOrder(s, sig, live, acct){
   if(!r.ok) throw new Error(r.status === 401 || r.status === 403 ? 'Firebase ne mana kiya (auth)' : 'HTTP ' + r.status);
   return body;
 }
+
+/* 📈 Chart Analysis ka batch (Fib LIMIT + STOP) -> PERSONAL FX. SamuSignal jaisa: ek "batch", jo pehle
+   bhare EA baaki cancel karta hai (AppBatchOCO). 60 min me na bhare to EA hata deta hai. */
+export async function sendBatch(s, plan, acct){
+  const sp = SPECS[plan.sym], legs = plan.legs.filter(L => L.ok), now = Date.now(), batch = 'F' + now.toString(36);
+  if(!legs.length) throw new Error('Koi order nahi');
+  const sent = [];
+  for(let k = 0; k < legs.length; k++){
+    const L = legs[k];
+    const body = {id: now + k, pair: sp.name, type: L.dir + L.kind, entry: +(+L.entry).toFixed(sp.digits), live: +(+plan.live).toFixed(sp.digits),
+      at: now, exp: 60, status: 'NEW', src: 'SamuSignal Pro FIB', batch, leg: k + 1, legs: legs.length};
+    if(acct) body.acct = acct;
+    const r = await fetch(fbUrl(s, 'personalfx/orders'), {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+    if(!r.ok) throw new Error((sent.length ? `${sent.length} gaya, baaki fail — ` : '') + (r.status === 401 || r.status === 403 ? 'Firebase ne mana kiya (auth)' : 'HTTP ' + r.status));
+    sent.push(body);
+  }
+  return sent;
+}
