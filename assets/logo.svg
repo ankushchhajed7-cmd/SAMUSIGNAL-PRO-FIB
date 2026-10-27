@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- gold + silver mirror finish (chamakdar dhatu jaisi dhaariyan) -->
+    <linearGradient id="mirror" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7a5a12"/>
+      <stop offset="0.12" stop-color="#f7e08a"/>
+      <stop offset="0.22" stop-color="#c9971f"/>
+      <stop offset="0.34" stop-color="#fff6cf"/>
+      <stop offset="0.45" stop-color="#b8bcc4"/>
+      <stop offset="0.55" stop-color="#ffffff"/>
+      <stop offset="0.64" stop-color="#9aa0aa"/>
+      <stop offset="0.76" stop-color="#f3d36b"/>
+      <stop offset="0.88" stop-color="#a77a17"/>
+      <stop offset="1" stop-color="#fbe9a8"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="0.45" stop-color="#ffffff" stop-opacity="0.08"/>
+      <stop offset="0.5" stop-color="#000000" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.18"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b2433"/>
+      <stop offset="1" stop-color="#05080d"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#6b5013"/>
+      <stop offset="0.5" stop-color="#fff3c4"/>
+      <stop offset="1" stop-color="#8d939c"/>
+    </linearGradient>
+  </defs>
+  <!-- metal tile -->
+  <rect x="8" y="8" width="496" height="496" rx="112" fill="url(#mirror)"/>
+  <rect x="8" y="8" width="496" height="496" rx="112" fill="url(#gloss)"/>
+  <rect x="14" y="14" width="484" height="484" rx="106" fill="none" stroke="url(#edge)" stroke-width="6"/>
+  <!-- golden spiral (Fibonacci) -->
+  <g fill="none" stroke="url(#ink)" stroke-width="18" stroke-linecap="round">
+    <path d="M 300 214 A 34 34 0 0 1 266 248 A 55 55 0 0 1 211 193 A 89 89 0 0 1 300 104 A 144 144 0 0 1 444 248"/>
+  </g>
+  <!-- 61.8% line + candles -->
+  <line x1="70" y1="312" x2="442" y2="312" stroke="#0d131d" stroke-width="7" stroke-dasharray="20 12"/>
+  <g fill="url(#ink)">
+    <rect x="96" y="250" width="34" height="96" rx="6"/><rect x="110" y="232" width="6" height="132" rx="3"/>
+    <rect x="160" y="282" width="34" height="74" rx="6"/><rect x="174" y="266" width="6" height="104" rx="3"/>
+    <rect x="224" y="300" width="34" height="56" rx="6"/><rect x="238" y="288" width="6" height="92" rx="3"/>
+  </g>
+  <text x="256" y="452" text-anchor="middle" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-size="74" fill="url(#ink)" letter-spacing="2">61.8</text>
+</svg>

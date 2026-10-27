@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SamuSignal Pro FIB</title>
+<meta name="description" content="Fibonacci 61.8% retracement signals — Forex only. Signals only, no guarantee.">
+<meta name="theme-color" content="#0b0f16">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#0b0f16;--card:#121926;--line:#243045;--txt:#eef2f7;--mut:#8d9bb0;--gold:#e8c35a;--silver:#c9ced6;--up:#22c58b;--dn:#ff5d5d;--warn:#f0b429;--blue:#5aa9ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:70px}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,#0b0f16,#0b0f16ee);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:10px}
+header img{width:38px;height:38px;border-radius:10px}
+.brand{font-weight:900;letter-spacing:1px;background:linear-gradient(90deg,#f7e08a,#c9971f,#fff,#9aa0aa,#e8c35a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.badge{margin-left:auto;font-size:11px;font-weight:800;padding:4px 8px;border-radius:7px;border:1px solid var(--line);white-space:nowrap}
+.badge.mt5{color:var(--up);border-color:var(--up)} .badge.td{color:var(--blue);border-color:var(--blue)} .badge.demo{color:#000;background:var(--warn);border-color:var(--warn)}
+main{max-width:760px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:12px}
+h2{font-size:13px;letter-spacing:1.5px;margin:0 0 10px;color:var(--gold)}
+.hint{color:var(--mut);font-size:12.5px;margin:6px 0 0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:#1a2333;color:var(--txt);padding:10px 12px;font-weight:700}
+button.gold{background:linear-gradient(135deg,#f7e08a,#c9971f 45%,#fff6cf 60%,#b8bcc4 80%,#e8c35a);color:#111;border:0}
+button.go{background:var(--up);color:#00150c;border:0}
+button:disabled{opacity:.45;cursor:default}
+select,input{font:inherit;background:#0e1420;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px;width:100%}
+label{font-size:12px;color:var(--mut);display:block;margin:8px 0 4px}
+.pairs{display:grid;gap:6px}
+.p{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.p b{min-width:64px;font-family:ui-monospace,Menlo,monospace}
+.chip{font-size:10.5px;font-weight:800;padding:3px 7px;border-radius:6px;border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+.st-CONFIRMED{color:#00150c;background:var(--up);border-color:var(--up)}
+.st-WAIT{color:var(--warn);border-color:var(--warn)}
+.st-INVALIDATED,.st-EXPIRED{color:var(--dn);border-color:#5a2a2a}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:13px;margin-top:8px}
+.kv div span{display:block;color:var(--mut);font-size:11px}
+.mono{font-family:ui-monospace,Menlo,monospace}
+.buy{color:var(--up)} .sell{color:var(--dn)}
+.why{border-left:3px solid var(--gold);padding:6px 10px;background:#0e1420;border-radius:6px;margin-top:8px;font-size:13px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#0e1420;border-top:1px solid var(--line);display:flex}
+nav button{flex:1;border:0;border-radius:0;background:none;padding:12px 4px;font-size:12px;color:var(--mut)}
+nav button.on{color:var(--gold)}
+.hide{display:none}
+.demo-banner{background:var(--warn);color:#000;font-weight:900;text-align:center;padding:8px;border-radius:10px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:12.5px} td,th{padding:5px 4px;border-bottom:1px dashed var(--line);text-align:left}
+</style>
+</head>
+<body>
+<header>
+  <img src="icon-192.png" alt="">
+  <div><div class="brand">SAMUSIGNAL PRO FIB</div><div class="hint" style="margin:0;font-size:11px">Fib 61.8% · sirf Forex · signal, guarantee nahi</div></div>
+  <span class="badge" id="srcBadge">—</span>
+</header>
+<main>
+  <div id="demoBanner" class="demo-banner hide">DEMO DATA — LIVE SIGNALS DISABLED</div>
+
+  <section id="pgScan">
+    <div class="card">
+      <h2>🔍 SCAN</h2>
+      <div class="row">
+        <button class="gold" id="scanBtn" style="flex:1">SAB PAIR SCAN</button>
+        <button id="autoBtn">⟳ Auto: OFF</button>
+      </div>
+      <p class="hint" id="scanCost">—</p>
+      <p class="hint" id="scanState"></p>
+    </div>
+    <div class="card"><h2>PAIRS</h2><div class="pairs" id="pairList"><p class="hint">Scan dabao.</p></div></div>
+    <div class="card hide" id="sigCard"></div>
+  </section>
+
+  <section id="pgRec" class="hide">
+    <div class="card"><h2>📒 SIGNAL BANE (app ne diye)</h2><div id="recSig"></div></div>
+    <div class="card"><h2>✋ MAINE LIYE (alag hisaab)</h2><div id="recTaken"></div></div>
+    <div class="card"><button id="settleBtn" style="width:100%">🔎 Nateeje check karo</button><p class="hint">Har record ke baad ki band 5m candles se: SL pehle ya TP pehle (ek hi candle me dono = SL). "Signal bane" aur "Maine liye" kabhi mila ke nahi gine jaate.</p></div>
+  </section>
+
+  <section id="pgBt" class="hide">
+    <div class="card"><h2>🧪 BACKTEST (imaandaar)</h2><div id="btBox"><p class="hint">—</p></div></div>
+  </section>
+
+  <section id="pgSet" class="hide">
+    <div class="card">
+      <h2>🔗 SAMUSIGNAL SE (auto, sirf padhte hain)</h2>
+      <div id="importBox" class="hint">—</div>
+      <p class="hint">Keys kabhi screen pe nahi dikhti. Neeche khaali chhodo = SamuSignal wali. Bharoge to sirf is app me (SamuSignal nahi badlega).</p>
+      <label>TwelveData key (override)</label><input id="ovTd" type="password" placeholder="khaali = SamuSignal wali">
+      <label>Firebase URL (override)</label><input id="ovFb" placeholder="khaali = SamuSignal wala">
+      <label>Firebase auth (override)</label><input id="ovAuth" type="password" placeholder="khaali = SamuSignal wala">
+    </div>
+    <div class="card">
+      <h2>⚙️ NIYAM</h2>
+      <label>Broker symbol suffix (Exness = m → AUDCADm)</label><input id="sSuffix">
+      <label>1H filter</label><select id="sH1"><option value="same">1H bhi wahi trend ho (prompt jaisa)</option><option value="notOpposite">1H ulta na ho (flat chalega)</option></select>
+      <label>Kam se kam R:R (cost ke baad)</label><input id="sRR" type="number" step="0.1">
+      <label>SL buffer (15m ATR ×)</label><input id="sSlAtr" type="number" step="0.05">
+      <label>Lot ($ risk dikhane ke liye)</label><input id="sLot" type="number" step="0.01">
+      <label>Commission (pips) / Slippage (pips)</label><div class="row"><input id="sCom" type="number" step="0.1" style="flex:1"><input id="sSlip" type="number" step="0.1" style="flex:1"></div>
+      <button class="gold" id="saveBtn" style="width:100%;margin-top:12px">Save</button>
+    </div>
+    <div class="card">
+      <h2>🚀 MT5 · PERSONAL FX</h2>
+      <p class="hint">CONFIRMED signal pe "🚀 MT5" dabao + confirm = order seedha PERSONAL FX (SamuSignal wala Firebase raasta). App khud kabhi order nahi bhejta.</p>
+      <label>Account (dono tick = order demo + real dono me)</label><div id="sAccts" class="hint">—</div>
+      <div id="eaBox" class="hint"></div>
+    </div>
+  </section>
+</main>
+<nav>
+  <button data-pg="Scan" class="on">🔍 Scan</button>
+  <button data-pg="Rec">📒 Records</button>
+  <button data-pg="Bt">🧪 Backtest</button>
+  <button data-pg="Set">⚙️ Settings</button>
+</nav>
+<script type="module" src="src/app.js"></script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{})</script>
+</body>
+</html>
