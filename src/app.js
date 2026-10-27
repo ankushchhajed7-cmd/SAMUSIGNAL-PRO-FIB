@@ -5,6 +5,7 @@ import {settings, LS, loadPair, demoPair, feedStatus} from './data.js';
 import {accounts, sendOrder} from './bridge.js';
 import * as REC from './records.js';
 
+export const VERSION = '0.1.2';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const fmt = (sym, v) => v == null || !isFinite(v) ? '—' : (+v).toFixed(SPECS[sym] ? SPECS[sym].digits : 5);
@@ -198,6 +199,17 @@ $('autoBtn').onclick = () => {
   if(autoT){ clearInterval(autoT); autoT = null; $('autoBtn').textContent = '⟳ Auto: OFF'; return }
   autoT = setInterval(() => { if(!document.hidden && SRC === 'mt5') scan() }, 5 * 60000);
   $('autoBtn').textContent = '⟳ Auto: 5 min'; scan();
+};
+/* ⟳ = naya version (service worker update + cache saaf) + data source dobara */
+$('verTag').textContent = 'v' + VERSION;
+$('refBtn').onclick = async () => {
+  $('refBtn').disabled = true; $('refBtn').textContent = '…';
+  try{
+    const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+    if(reg) await reg.update();
+    if(window.caches) for(const k of await caches.keys()) await caches.delete(k);
+  }catch(e){}
+  location.reload();
 };
 refreshSource();
 export {STATES};
