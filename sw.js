@@ -1,5 +1,5 @@
 /* SamuSignal Pro FIB — service worker. App shell cache; data (Firebase / TwelveData) kabhi cache nahi. */
-const VERSION = '0.1.0';
+const VERSION = '0.1.1';
 const CACHE = 'ssfib-' + VERSION;
 const SHELL = ['./', 'index.html', 'manifest.json', 'src/app.js', 'src/engine.js', 'src/data.js', 'src/symbols.js', 'src/bridge.js', 'src/records.js',
   'icon-192.png', 'icon-512.png', 'favicon.png'];
