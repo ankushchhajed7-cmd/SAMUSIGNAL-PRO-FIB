@@ -59,7 +59,18 @@ table{width:100%;border-collapse:collapse;font-size:12.5px} td,th{padding:5px 4p
 <main>
   <div id="demoBanner" class="demo-banner hide">DEMO DATA — LIVE SIGNALS DISABLED</div>
 
-  <section id="pgScan">
+  <section id="pgAn">
+    <div class="card">
+      <h2>📈 CHART ANALYSIS · Fib LIMIT / STOP</h2>
+      <p class="hint" style="margin-top:0">SamuSignal jaisa faisla (naya trend = order, purana / rest = NO TRADE) · bhaav Fib se: LIMIT 61.8% pe, STOP swing ke paar · AI nahi.</p>
+      <label>Pair</label><select id="anPair"></select>
+      <button class="gold" id="anBtn" style="width:100%;margin-top:10px">📸 AUTO ANALYZE</button>
+      <p class="hint" id="anState"></p>
+    </div>
+    <div class="card hide" id="anCard"></div>
+  </section>
+
+  <section id="pgScan" class="hide">
     <div class="card">
       <h2>🔍 SCAN</h2>
       <div class="row">
@@ -74,7 +85,8 @@ table{width:100%;border-collapse:collapse;font-size:12.5px} td,th{padding:5px 4p
   </section>
 
   <section id="pgRec" class="hide">
-    <div class="card"><h2>📒 SIGNAL BANE (app ne diye)</h2><div id="recSig"></div></div>
+    <div class="card"><h2>📈 ANALYSIS (Fib LIMIT/STOP) — Strategy 2 niyam se</h2><div id="recFib"></div></div>
+    <div class="card"><h2>📒 SIGNAL BANE (confirm mode)</h2><div id="recSig"></div></div>
     <div class="card"><h2>✋ MAINE LIYE (alag hisaab)</h2><div id="recTaken"></div></div>
     <div class="card"><button id="settleBtn" style="width:100%">🔎 Nateeje check karo</button><p class="hint">Har record ke baad ki band 5m candles se: SL pehle ya TP pehle (ek hi candle me dono = SL). "Signal bane" aur "Maine liye" kabhi mila ke nahi gine jaate.</p></div>
   </section>
@@ -111,7 +123,8 @@ table{width:100%;border-collapse:collapse;font-size:12.5px} td,th{padding:5px 4p
   </section>
 </main>
 <nav>
-  <button data-pg="Scan" class="on">🔍 Scan</button>
+  <button data-pg="An" class="on">📈 Analysis</button>
+  <button data-pg="Scan">🔍 Confirm</button>
   <button data-pg="Rec">📒 Records</button>
   <button data-pg="Bt">🧪 Backtest</button>
   <button data-pg="Set">⚙️ Settings</button>
