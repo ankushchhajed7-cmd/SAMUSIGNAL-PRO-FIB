@@ -2,12 +2,12 @@
 import {analyze, STATES} from './engine.js';
 import {FX, SPECS, brokerSymbol, distToUsd} from './symbols.js';
 import {settings, LS, loadPair, demoPair, feedStatus} from './data.js';
-import {accounts, sendOrder, sendBatch, flipLeg} from './bridge.js';
+import {accounts, sendOrder, sendBatch, flipLeg, sendMarket, mktDir} from './bridge.js';
 import {chartAnalyze} from './mtf.js';
 import {usdToDist} from './symbols.js';
 import * as REC from './records.js';
 
-export const VERSION = '0.2.1';
+export const VERSION = '0.2.2';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const fmt = (sym, v) => v == null || !isFinite(v) ? '—' : (+v).toFixed(SPECS[sym] ? SPECS[sym].digits : 5);
@@ -137,7 +137,7 @@ async function runAnalysis(){
     if(SRC === 'demo') throw new Error('Live data nahi (MT5 feed band, TwelveData key nahi) — DEMO DATA pe analysis nahi');
     const P = await loadPair(S, sym, SRC === 'mt5');
     AN = chartAnalyze(P.data, Date.now(), sym, {spreadPips: P.spreadPips, tpUsd: S.pfxTp, gapUsd: S.pfxGap});
-    AN.src = P.src;
+    AN.src = P.src; AN.at = Date.now();
     if(AN.legs.some(L => L.ok)) REC.addFib(AN, false);
     $('anState').textContent = `Ho gaya · ${new Date().toLocaleTimeString()}`;
     renderAn();
@@ -166,7 +166,9 @@ function renderAn(){
     <div class="why"><b>${go ? 'Kyun?' : 'Why no trade?'}</b><br>${r.why.map(esc).join('<br>')}</div>
     ${go ? `<p class="hint">🔗 Dono order ek batch — jo pehle bhare, PERSONAL FX baaki cancel karega · 60 min me na bhare to hat jayega · lot / TP / SL / lock: EA ke apne niyam. Backtest: Level Engine jaisa, thoda kam DD, saabit fayda nahi — pehle demo.</p>
       <div class="row" style="margin-top:8px"><button class="go" id="anSend" style="flex:1">🚀 PERSONAL FX ko bhejo</button><button id="anTook">✓ Maine liya</button></div>
-      <button id="anRev" style="width:100%;margin-top:8px;border-color:var(--dn);color:#ffb3b3">🔄 ULTA bhejo — ${r.legs.filter(L => L.ok).map(L => { const f = flipLeg(L); return f.dir + ' ' + f.kind }).join(' + ')} (usi bhaav pe)</button>` : ''}`;
+      <button id="anRev" style="width:100%;margin-top:8px;border-color:var(--dn);color:#ffb3b3">🔄 ULTA bhejo — ${r.legs.filter(L => L.ok).map(L => { const f = flipLeg(L); return f.dir + ' ' + f.kind }).join(' + ')} (usi bhaav pe)</button>
+      ${mktDir(r) ? `<button id="anMkt" style="width:100%;margin-top:8px;border-color:${mktDir(r) === 'BUY' ? 'var(--up)' : 'var(--dn)'};color:${mktDir(r) === 'BUY' ? 'var(--up)' : '#ffb3b3'}">⚡ ABHI ENTRY — ${mktDir(r)} MARKET (turant, live bhaav pe)</button>` : ''}` : ''}`;
+  if(go && $('anMkt')) $('anMkt').onclick = sendMkt;
   if(go){ $('anSend').onclick = () => sendAn(false); $('anRev').onclick = () => sendAn(true); $('anTook').onclick = () => { REC.addFib(AN, true); alert('Records me likh diya') } }
 }
 async function sendAn(rev){
@@ -186,6 +188,24 @@ async function sendAn(rev){
   alert((ok.length ? `Gaya ✅ ${ok.join(', ')}` : '') + (fail.length ? `\n❌ ${fail.join(' | ')}` : ''));
 }
 
+/* ⚡ ABHI ENTRY: LIMIT/STOP ka intezaar nahi — analysis ki disha me turant MARKET (RANGE me nahi) */
+async function sendMkt(){
+  const r = AN; if(!r) return;
+  const dir = mktDir(r); if(!dir){ alert('Disha pakki nahi (RANGE) — ABHI ENTRY nahi'); return }
+  if(Date.now() - (r.at || 0) > 5 * 60000){ alert('Analysis 5 min se purana — bhaav badal gaya hoga, dobara AUTO ANALYZE karo'); return }
+  const {all, use} = await pickAccts();
+  if(all.length && !use.length){ alert('Settings me koi account tick nahi hai'); return }
+  const names = use.map(a => `${a.login} (${a.real ? 'REAL' : 'DEMO'})`).join(', ');
+  if(!confirm(`⚡ ABHI ENTRY — ${SPECS[r.sym].name} ${dir} MARKET\nLive ~${fmt(r.sym, r.live)} (EA broker ke bhaav pe turant bharega)\nAccount: ${names || 'har account (bina tag)'}\n\nLIMIT/STOP ka intezaar nahi. Backtest: jeet LIMIT/STOP jitni hi, bas +$1 thoda der se.\nLot/TP/SL/lock: EA ke niyam.\nBhejein?`)) return;
+  const ok = [], fail = [];
+  for(const a of (use.length ? use : [null])){
+    try{ await sendMarket(S, r, a ? String(a.login) : undefined); ok.push(a ? a.login : 'sab') }
+    catch(e){ fail.push((a ? a.login + ': ' : '') + e.message) }
+  }
+  if(ok.length) REC.addFib(r, true, false, dir);
+  alert((ok.length ? `Gaya ✅ ${ok.join(', ')}` : '') + (fail.length ? `\n❌ ${fail.join(' | ')}` : ''));
+}
+
 /* ---------- records ---------- */
 function recTable(k){
   const a = REC.list(k), st = REC.stats(a);
@@ -201,7 +221,7 @@ function fibTable(){
   return `<p class="hint">Kul ${a.length} · bhare + nateeja ${done.length} · bhara nahi ${nf}${done.length ? ` · jeet ${Math.round(w / done.length * 100)}% · kul $${sum.toFixed(2)} (0.01 lot)` : ''}</p>
     <p class="hint">Sirf analysis (bheja nahi): ${part(false)} · Bheja / maine liya: ${part(true)}</p>
     ${done.length >= REC.MIN_N ? '' : `<p class="hint" style="color:var(--warn)">Not enough data for a reliable conclusion (${done.length}/${REC.MIN_N}).</p>`}
-    ${a.length ? `<table><tr><th>Waqt</th><th>Pair</th><th>Order</th><th>Nateeja</th></tr>${a.slice(0, 40).map(r => `<tr><td>${t12(r.at)}${r.sent ? (r.rev ? ' 🔄' : ' 🚀') : ''}</td><td>${SPECS[r.sym] ? SPECS[r.sym].name : esc(r.sym)}</td><td>${r.legs.map(L => L.dir[0] + (L.kind === 'LIMIT' ? 'L' : 'S')).join('+')}</td><td>${r.res ? (r.res.r === 'NOFILL' ? 'bhara nahi' : (r.res.usd > 0 ? '✓ $' : '✗ $') + r.res.usd.toFixed(2) + ' ' + r.res.r) : '…'}</td></tr>`).join('')}</table>` : ''}`;
+    ${a.length ? `<table><tr><th>Waqt</th><th>Pair</th><th>Order</th><th>Nateeja</th></tr>${a.slice(0, 40).map(r => `<tr><td>${t12(r.at)}${r.sent ? (r.rev ? ' 🔄' : r.mkt ? ' ⚡' : ' 🚀') : ''}</td><td>${SPECS[r.sym] ? SPECS[r.sym].name : esc(r.sym)}</td><td>${r.legs.map(L => L.dir[0] + (L.kind === 'LIMIT' ? 'L' : L.kind === 'MARKET' ? 'M' : 'S')).join('+')}</td><td>${r.res ? (r.res.r === 'NOFILL' ? 'bhara nahi' : (r.res.usd > 0 ? '✓ $' : '✗ $') + r.res.usd.toFixed(2) + ' ' + r.res.r) : '…'}</td></tr>`).join('')}</table>` : ''}`;
 }
 function renderRec(){ $('recFib').innerHTML = fibTable(); $('recSig').innerHTML = recTable('sig'); $('recTaken').innerHTML = recTable('taken') }
 async function settleAll(){
