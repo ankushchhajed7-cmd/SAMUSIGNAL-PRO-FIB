@@ -136,7 +136,7 @@ async function runAnalysis(){
     await refreshSource();
     if(SRC === 'demo') throw new Error('Live data nahi (MT5 feed band, TwelveData key nahi) — DEMO DATA pe analysis nahi');
     const P = await loadPair(S, sym, SRC === 'mt5');
-    AN = chartAnalyze(P.data, Date.now(), sym, {spreadPips: P.spreadPips, tpUsd: S.pfxTp, gapUsd: S.pfxGap, swingStop: LS.get('anOrd', 'gold') === 'swing'});
+    AN = chartAnalyze(P.data, Date.now(), sym, {spreadPips: P.spreadPips, tpUsd: S.pfxTp, gapUsd: S.pfxGap, swingStop: LS.get('anOrd', 'swing') === 'swing'});
     AN.src = P.src; AN.at = Date.now();
     if(AN.legs.some(L => L.ok)) REC.addFib(AN, false);
     $('anState').textContent = `Ho gaya · ${new Date().toLocaleTimeString()}`;
@@ -337,7 +337,7 @@ async function renderSet(){
   const f = S.fromSamu, y = v => v ? '✅' : '—';
   $('importBox').innerHTML = `TwelveData key ${y(f.tdKey)} · Gemini key ${y(f.gKey)} · Firebase URL ${f.fbUrl ? '✅' : '✅ (default)'} · Firebase auth ${y(f.fbAuth)} · Telegram ${y(f.tg)}`;
   const ov = LS.get('ov', {}); $('ovTd').value = ov.tdKey || ''; $('ovFb').value = ov.fbUrl || ''; $('ovAuth').value = ov.fbAuth || '';
-  $('sOrd').value = LS.get('anOrd', 'gold');
+  $('sOrd').value = LS.get('anOrd', 'swing');
   const c = CFG(); $('sSuffix').value = SUFFIX(); $('sH1').value = c.h1Mode; $('sRR').value = c.minRR; $('sSlAtr').value = c.slAtr; $('sLot').value = LOT(); $('sCom').value = c.commissionPips; $('sSlip').value = c.slippagePips;
   const acc = await accounts(S), off = LS.get('acctOff', []);
   $('sAccts').innerHTML = acc.length ? acc.map(a => `<label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--txt)"><input type="checkbox" style="width:auto" data-acct="${esc(a.login)}" ${off.includes(String(a.login)) ? '' : 'checked'}>
