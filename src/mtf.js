@@ -85,23 +85,39 @@ export function mtfGate(R, tpDist){
   return {mode: 'NONE', why: r15.adx >= MTF_ADX_RANGE ? `Trend saaf nahi aur range bhi nahi (15m ADX ${r15.adx.toFixed(0)}) — gadbad market` : 'Range bahut patli hai — TP tak jagah nahi'};
 }
 
-/* gate + Fib leg -> order (pure, test ke liye alag) */
+/* gate + Fib leg -> order (pure, test ke liye alag)
+   v0.3.0: sirf EK order, Fib 61.8% (golden ratio) pe. LIMIT ya STOP live ki jagah se:
+   UP: live 61.8 ke upar = BUY LIMIT (pullback aayega) · live 61.8 ke neeche (78.6 se upar) = BUY STOP (wapas upar aaye tab)
+   DOWN: ulta. Live 78.6 ke paar = setup toota (NO TRADE). */
+export const FIB_LV = [0, 0.236, 0.382, 0.5, 0.618, 0.65, 0.786, 1];
 export function fibPlan(g, b15, ctx, cfg = {}){
   const out = {mode: g.mode, cat: g.cat || '', why: [g.why], legs: [], leg: null};
   if(g.mode === 'NONE') return out;
   if(g.mode === 'RANGE'){ out.mode = 'NONE'; out.why.push('Fib sirf trend me — range me order nahi'); return out }
   const leg = fibLeg(b15, g.mode, cfg);
   if(!leg || leg.bad){ out.mode = 'NONE'; out.why.push('Fib swing pakka nahi — ' + (leg && leg.bad || 'swing nahi mila')); return out }
-  out.leg = leg;
   const up = g.mode === 'UP', dir = up ? 'BUY' : 'SELL', sg = up ? 1 : -1;
+  leg.levels = FIB_LV.map(r => ({r, px: leg.end.px - sg * r * leg.size}));
+  leg.golden = [leg.end.px - sg * 0.618 * leg.size, leg.end.px - sg * 0.65 * leg.size].sort((x, y) => x - y);
+  out.leg = leg;
   const minD = Math.max(0.2 * ctx.a5, 3 * ctx.pip), maxD = Math.max(2 * ctx.a15, 1.2 * ctx.gap);
-  const chk = (entry, side) => { const d = (entry - ctx.live) * side;
-    return d <= 0 ? (side < 0 ? 'live price pehle hi iske neeche hai' : 'live price pehle hi iske upar hai') : d < minD ? 'live ke bahut paas' : d > maxD ? 'bahut door — 60 min me pahunchna mushkil' : '' };
-  const lim = leg.lvl618, stp = leg.end.px + sg * (0.35 * ctx.a5 + ctx.spread);
-  const L1 = {dir, kind: 'LIMIT', side: up ? -1 : 1, entry: lim, why: 'Fib 61.8% (pullback)'};
-  const L2 = {dir, kind: 'STOP', side: up ? 1 : -1, entry: stp, why: `swing ${up ? 'high' : 'low'} ke paar (breakout)`};
-  for(const L of [L1, L2]){ L.bad = chk(L.entry, L.side); L.ok = !L.bad; out.legs.push(L) }
-  if(!out.legs.some(L => L.ok)){ out.mode = 'NONE'; out.why.push('Dono bhaav sahi doori pe nahi — NO TRADE') }
+  const e = leg.lvl618, above = (ctx.live - e) * sg;          /* + = live trend ki taraf (61.8 se pehle) */
+  const L = above > 0
+    ? {dir, kind: 'LIMIT', side: -sg, entry: e, why: `Fib 61.8% golden ratio — pullback pe ${dir} LIMIT`}
+    : {dir, kind: 'STOP', side: sg, entry: e, why: `price 61.8% ke ${up ? 'neeche' : 'upar'} — wapas golden ratio paar kare tab ${dir} STOP`};
+  const d = Math.abs(ctx.live - e);
+  L.bad = (ctx.live - leg.invalid) * sg <= 0 ? `live 78.6% ke paar — setup toota`
+    : d < minD ? 'live 61.8% ke bilkul paas — ⚡ ABHI ENTRY ya thodi der baad dobara'
+    : d > maxD ? 'bahut door — 60 min me pahunchna mushkil' : '';
+  L.ok = !L.bad; out.legs.push(L);
+  /* Settings: "golden + swing STOP" (v0.2 jaisa dusra order, OCO) — default band */
+  if(cfg.swingStop){
+    const stp = leg.end.px + sg * (0.35 * ctx.a5 + ctx.spread), ds = (stp - ctx.live) * sg;
+    const L2 = {dir, kind: 'STOP', side: sg, entry: stp, why: `swing ${up ? 'high' : 'low'} ke paar (breakout)`};
+    L2.bad = ds <= 0 ? 'live pehle hi swing ke paar' : ds < minD ? 'live ke bahut paas' : ds > maxD ? 'bahut door — 60 min me pahunchna mushkil' : '';
+    L2.ok = !L2.bad; out.legs.push(L2);
+  }
+  if(!out.legs.some(x => x.ok)){ out.mode = 'NONE'; out.why.push('Golden ratio order sahi doori pe nahi — NO TRADE') }
   return out;
 }
 
@@ -118,12 +134,13 @@ export function chartAnalyze(data, now, sym, opt = {}){
   const g = mtfGate(R, usdToDist(sym, tpUsd, 0.01));
   const ctx = {live, a5: R['5min'].atr, a15: R['15min'].atr, pip: sp.pip, gap: usdToDist(sym, gapUsd, 0.01),
     spread: (opt.spreadPips != null ? opt.spreadPips : sp.spreadPips) * sp.pip};
-  const plan = fibPlan(g, b15all.slice(-320), ctx);
+  const plan = fibPlan(g, b15all.slice(-320), ctx, {swingStop: !!opt.swingStop});
   /* +$1 andaza (SamuSignal: 160 min x $1 doori / max(ATR15, pichhle ghante ki range / 2)) */
   const h4 = b15.slice(-4), hr = Math.max(...h4.map(x => x.h)) - Math.min(...h4.map(x => x.l));
   const aEff = Math.max(ctx.a15, hr / 2);
   plan.eta = aEff > 0 ? Math.max(15, Math.round(160 * usdToDist(sym, 1, 0.01) / aEff / 15) * 15) : null;
   plan.trends = {h1: R['1h'].t, m15: R['15min'].t, m5: R['5min'].t, adx15: +R['15min'].adx.toFixed(0)};
   plan.live = live; plan.dataTime = b5[b5.length - 1].t; plan.sym = sym;
+  plan.chart = {'15min': b15all.slice(-160), '5min': b5, '1h': b60};
   return plan;
 }

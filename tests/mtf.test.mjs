@@ -17,17 +17,32 @@ test('gate: purana / rest / ulte = NO TRADE', () => {
 
 const b = bars5(upBase()), b15 = completedBars(agg(b, 900e3), '15min', nowAfter(b));
 const ctx = live => ({live, a5: 0.2, a15: 0.8, pip: 0.01, gap: 5, spread: 0.02});
-test('BUY: LIMIT = 61.8% live ke NEECHE, STOP = swing high ke UPAR', () => {
-  const p = fibPlan({mode: 'UP', cat: 'naya', why: 'x'}, b15, ctx(181.4));
-  const L = p.legs.find(x => x.kind === 'LIMIT'), S = p.legs.find(x => x.kind === 'STOP');
+const G = {mode: 'UP', cat: 'naya', why: 'x'};
+test('golden ratio: live 61.8% ke UPAR = sirf ek BUY LIMIT @ 61.8%', () => {
+  const p = fibPlan(G, b15, ctx(181.4));
+  assert.equal(p.legs.length, 1);
+  const L = p.legs[0];
   assert.ok(p.leg && Math.abs(L.entry - p.leg.lvl618) < 1e-9);
-  assert.ok(L.entry < 181.4 && L.ok, JSON.stringify(L));
-  assert.ok(S.entry > p.leg.end.px && S.ok, JSON.stringify(S));
-  assert.equal(L.dir, 'BUY'); assert.equal(S.dir, 'BUY');
+  assert.equal(L.kind, 'LIMIT'); assert.equal(L.dir, 'BUY'); assert.ok(L.ok && L.entry < 181.4, JSON.stringify(L));
+  assert.ok(p.leg.levels.some(x => x.r === 0.618 && Math.abs(x.px - L.entry) < 1e-9));
+  assert.ok(p.leg.golden[0] <= L.entry && L.entry <= p.leg.golden[1]);
 });
-test('live pehle hi 61.8% ke paar = LIMIT nahi', () => {
-  const p = fibPlan({mode: 'UP', cat: 'naya', why: 'x'}, b15, ctx(175.0));
-  assert.equal(p.legs.find(x => x.kind === 'LIMIT').ok, false);
+test('golden ratio: live 61.8% ke NEECHE (78.6% se pehle) = BUY STOP @ 61.8%', () => {
+  const p = fibPlan(G, b15, ctx(175.0)), L = p.legs[0];
+  assert.equal(L.kind, 'STOP'); assert.ok(L.ok, JSON.stringify(L)); assert.ok(Math.abs(L.entry - p.leg.lvl618) < 1e-9 && L.entry > 175.0);
+});
+test('live 78.6% ke paar = setup toota, NO TRADE', () => {
+  const p = fibPlan(G, b15, ctx(173.0));
+  assert.equal(p.mode, 'NONE'); assert.match(p.legs[0].bad, /78\.6/);
+});
+test('live 61.8% ke bilkul paas = order nahi', () => {
+  const p = fibPlan(G, b15, ctx(175.6));
+  assert.equal(p.legs[0].ok, false); assert.equal(p.mode, 'NONE');
+});
+test('Settings: golden + swing STOP = dusra order swing high ke UPAR', () => {
+  const p = fibPlan(G, b15, ctx(181.4), {swingStop: true});
+  assert.equal(p.legs.length, 2); const S = p.legs[1];
+  assert.equal(S.kind, 'STOP'); assert.ok(S.entry > p.leg.end.px && S.ok, JSON.stringify(S));
 });
 test('bahut door = order nahi (doori ki shart)', () => {
   const p = fibPlan({mode: 'UP', cat: 'naya', why: 'x'}, b15, {live: 181.4, a5: 0.2, a15: 0.5, pip: 0.01, gap: 1, spread: 0.02});
