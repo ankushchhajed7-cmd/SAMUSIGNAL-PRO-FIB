@@ -23,6 +23,14 @@ Fibonacci **61.8% retracement** signal app, sirf **Forex** (Gold / Silver / BTC 
   (EA heartbeat me ye niyam nahi aate). Signal ka SL/TP EA pe apne aap nahi lagta.
 - **Records:** "Signal bane" aur "Maine liye" **alag**, nateeje kabhi mile-jule nahi. 30 se kam = "Not enough data".
 
+## 📊 v0.3.0 — chart pe auto Fib + golden ratio order
+- AUTO ANALYZE ke baad **TradingView Lightweight Charts** (Apache-2.0, `vendor/`) pe 15m / 5m / 1H candles (MT5 data, samay IST).
+- App khud swing dhoondhta hai (15m pakke pivots) aur chart pe banata hai: Swing A → B, Fib 0 / 23.6 / 38.2 / 50 / **61.8 GOLDEN** / 65 / 78.6 / 100, 🟡 golden zone (61.8–65%), LIVE line.
+- **Ek order 61.8% pe:** trend ki taraf live 61.8 se pehle = **LIMIT** (pullback), live 61.8 ke paar (78.6 se pehle) = **STOP** (wapas paar kare tab). 78.6 ke paar = setup toota, NO TRADE.
+- Settings → "Chart Analysis order": **golden + swing ke paar STOP (default**, 2 order OCO, backtest me behtar) ya sirf golden ratio.
+- Backtest (12 pair, ~22 din, SamuSignal ke naya-trend analysis): sirf 61.8 = 126 bhare (60 min me), +$1 pehle 91%, Strategy 2 −$0.01 / +$0.24 per trade (hafta A / B);
+  61.8 + swing STOP = 289 bhare, 93%, +$0.21 / +$0.26. Naya trend me price lagbhag hamesha 61.8 ke upar hota hai (1,108 LIMIT, 3 STOP) — 61.8 tak pullback 60 min me kam aata hai.
+
 ## 📈 Chart Analysis (v0.2.0) — SamuSignal jaisa faisla + Fib bhaav
 - Pair chuno → **📸 AUTO ANALYZE** (MT5 feed, nahi to TwelveData). Disha / NO TRADE **SamuSignal v10.6.6** ke niyam se
   (`src/mtf.js`, mtfRead + mtfGate copy): 15m trend + 1H flat = "naya trend" → order; purana trend / rest / ulte / range = NO TRADE.

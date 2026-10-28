@@ -45,6 +45,10 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#0e1420;border-top:1px sol
 nav button{flex:1;border:0;border-radius:0;background:none;padding:12px 4px;font-size:12px;color:var(--mut)}
 nav button.on{color:var(--gold)}
 .hide{display:none}
+.chip.on{color:#111;background:var(--gold);border-color:var(--gold)}
+button.chip{padding:4px 9px;font-size:11.5px}
+#anZone{position:absolute;left:0;right:0;pointer-events:none;background:linear-gradient(90deg,rgba(232,195,90,.10),rgba(232,195,90,.28));border-top:1px solid rgba(232,195,90,.7);border-bottom:1px solid rgba(232,195,90,.7);z-index:3}
+#anZone span{position:absolute;left:6px;top:2px;font-size:10px;font-weight:800;color:var(--gold);letter-spacing:.5px}
 .demo-banner{background:var(--warn);color:#000;font-weight:900;text-align:center;padding:8px;border-radius:10px;margin-bottom:12px}
 table{width:100%;border-collapse:collapse;font-size:12.5px} td,th{padding:5px 4px;border-bottom:1px dashed var(--line);text-align:left}
 </style>
@@ -61,11 +65,17 @@ table{width:100%;border-collapse:collapse;font-size:12.5px} td,th{padding:5px 4p
 
   <section id="pgAn">
     <div class="card">
-      <h2>📈 CHART ANALYSIS · Fib LIMIT / STOP</h2>
-      <p class="hint" style="margin-top:0">SamuSignal jaisa faisla (naya trend = order, purana / rest = NO TRADE) · bhaav Fib se: LIMIT 61.8% pe, STOP swing ke paar · AI nahi.</p>
+      <h2>📈 CHART ANALYSIS · Fib GOLDEN RATIO</h2>
+      <p class="hint" style="margin-top:0">SamuSignal jaisa faisla (naya trend = order, purana / rest = NO TRADE) · app khud swing dhoondh ke chart pe Fib + golden zone banata hai · order 61.8% pe: LIMIT ya STOP (price kahan hai uske hisaab se).</p>
       <label>Pair</label><select id="anPair"></select>
       <button class="gold" id="anBtn" style="width:100%;margin-top:10px">📸 AUTO ANALYZE</button>
       <p class="hint" id="anState"></p>
+    </div>
+    <div class="card hide" id="anChartCard" style="padding:10px">
+      <div class="row" style="margin-bottom:8px"><b id="anChartTtl" style="font-size:13px;color:var(--gold)">—</b>
+        <span style="margin-left:auto" class="row" id="anTf"><button class="chip" data-tf="5min">5m</button><button class="chip" data-tf="15min">15m</button><button class="chip" data-tf="1h">1H</button></span></div>
+      <div id="anChart" style="height:360px;position:relative;border-radius:10px;overflow:hidden"></div>
+      <p class="hint" id="anLegend" style="margin:8px 0 0"></p>
     </div>
     <div class="card hide" id="anCard"></div>
   </section>
@@ -108,6 +118,7 @@ table{width:100%;border-collapse:collapse;font-size:12.5px} td,th{padding:5px 4p
       <h2>⚙️ NIYAM</h2>
       <label>Broker symbol suffix (Exness = m → AUDCADm)</label><input id="sSuffix">
       <label>1H filter</label><select id="sH1"><option value="same">1H bhi wahi trend ho (prompt jaisa)</option><option value="notOpposite">1H ulta na ho (flat chalega)</option></select>
+      <label>📈 Chart Analysis order</label><select id="sOrd"><option value="swing">Golden ratio + swing ke paar STOP (2 order, jo pehle bhare) — backtest me behtar</option><option value="gold">Sirf golden ratio 61.8% (LIMIT ya STOP)</option></select>
       <label>Kam se kam R:R (cost ke baad)</label><input id="sRR" type="number" step="0.1">
       <label>SL buffer (15m ATR ×)</label><input id="sSlAtr" type="number" step="0.05">
       <label>Lot ($ risk dikhane ke liye)</label><input id="sLot" type="number" step="0.01">
@@ -129,6 +140,7 @@ table{width:100%;border-collapse:collapse;font-size:12.5px} td,th{padding:5px 4p
   <button data-pg="Bt">🧪 Backtest</button>
   <button data-pg="Set">⚙️ Settings</button>
 </nav>
+<script src="vendor/lightweight-charts-4.2.0.js"></script>
 <script type="module" src="src/app.js"></script>
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{})</script>
 </body>

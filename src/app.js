@@ -7,7 +7,7 @@ import {chartAnalyze} from './mtf.js';
 import {usdToDist} from './symbols.js';
 import * as REC from './records.js';
 
-export const VERSION = '0.2.3';
+export const VERSION = '0.3.0';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const fmt = (sym, v) => v == null || !isFinite(v) ? '—' : (+v).toFixed(SPECS[sym] ? SPECS[sym].digits : 5);
@@ -136,11 +136,11 @@ async function runAnalysis(){
     await refreshSource();
     if(SRC === 'demo') throw new Error('Live data nahi (MT5 feed band, TwelveData key nahi) — DEMO DATA pe analysis nahi');
     const P = await loadPair(S, sym, SRC === 'mt5');
-    AN = chartAnalyze(P.data, Date.now(), sym, {spreadPips: P.spreadPips, tpUsd: S.pfxTp, gapUsd: S.pfxGap});
+    AN = chartAnalyze(P.data, Date.now(), sym, {spreadPips: P.spreadPips, tpUsd: S.pfxTp, gapUsd: S.pfxGap, swingStop: LS.get('anOrd', 'swing') === 'swing'});
     AN.src = P.src; AN.at = Date.now();
     if(AN.legs.some(L => L.ok)) REC.addFib(AN, false);
     $('anState').textContent = `Ho gaya · ${new Date().toLocaleTimeString()}`;
-    renderAn();
+    renderAn(); drawChart();
   }catch(e){ $('anState').textContent = '⚠ ' + e.message }
   $('anBtn').disabled = false;
 }
@@ -157,20 +157,94 @@ function renderAn(){
       <div><span>1H / 15m / 5m</span>${esc([r.trends.h1, r.trends.m15, r.trends.m5].join(' / '))}</div>
       <div><span>15m ADX</span>${r.trends.adx15}</div>
       ${r.leg ? `<div><span>Fib anchors (15m)</span><span class="mono">${fmt(sym, r.leg.start.px)} → ${fmt(sym, r.leg.end.px)}</span></div>
-      <div><span>61.8% level</span><b class="mono">${fmt(sym, r.leg.lvl618)}</b></div>` : ''}
+      <div><span>61.8% golden ratio</span><b class="mono" style="color:var(--gold)">${fmt(sym, r.leg.lvl618)}</b></div>
+      <div><span>Golden zone (61.8–65%)</span><span class="mono">${fmt(sym, r.leg.golden[0])} – ${fmt(sym, r.leg.golden[1])}</span></div>
+      <div><span>Setup toota (78.6%)</span><span class="mono">${fmt(sym, r.leg.invalid)}</span></div>` : ''}
       ${go ? `<div><span>+$1 (0.01 lot) andaza</span>${eta(r.eta)}</div><div><span>Pending expiry</span>60 min</div>` : ''}
     </div>
     ${r.legs.map(L => `<div style="border:1px ${L.ok ? 'solid' : 'dashed'} ${L.ok ? (L.dir === 'BUY' ? 'var(--up)' : 'var(--dn)') : 'var(--line)'};border-radius:10px;padding:9px 11px;margin-top:8px;${L.ok ? '' : 'opacity:.6'}">
         <div class="row"><b class="${L.dir === 'BUY' ? 'buy' : 'sell'}" style="${L.ok ? '' : 'text-decoration:line-through'}">${L.dir} ${L.kind}</b><b class="mono" style="margin-left:auto">${fmt(sym, L.entry)}</b></div>
         <p class="hint" style="margin:4px 0 0">${esc(L.why)} · live se ${pips(L.entry - r.live)} pips ${L.entry > r.live ? 'upar' : 'neeche'} ($${distToUsd(sym, L.entry - r.live, 0.01).toFixed(2)} / 0.01)${L.ok ? '' : ' · ✗ ' + esc(L.bad)}</p></div>`).join('')}
     <div class="why"><b>${go ? 'Kyun?' : 'Why no trade?'}</b><br>${r.why.map(esc).join('<br>')}</div>
-    ${go ? `<p class="hint">🔗 Dono order ek batch — jo pehle bhare, PERSONAL FX baaki cancel karega · 60 min me na bhare to hat jayega · lot / TP / SL / lock: EA ke apne niyam. Backtest: Level Engine jaisa, thoda kam DD, saabit fayda nahi — pehle demo.</p>
+    ${go ? `<p class="hint">${r.legs.filter(L => L.ok).length > 1 ? '🔗 Dono order ek batch — jo pehle bhare, PERSONAL FX baaki cancel karega' : '🎯 Ek order — Fib 61.8% golden ratio pe'} · 60 min me na bhare to hat jayega · lot / TP / SL / lock: EA ke apne niyam. Backtest: saabit fayda nahi — pehle demo.</p>
       <div class="row" style="margin-top:8px"><button class="go" id="anSend" style="flex:1">🚀 PERSONAL FX ko bhejo</button><button id="anTook">✓ Maine liya</button></div>
       <button id="anRev" style="width:100%;margin-top:8px;border-color:var(--dn);color:#ffb3b3">🔄 ULTA bhejo — ${r.legs.filter(L => L.ok).map(L => { const f = flipLeg(L); return f.dir + ' ' + f.kind }).join(' + ')} (usi bhaav pe)</button>
       ${mktDir(r) ? `<button id="anMkt" style="width:100%;margin-top:8px;border-color:${mktDir(r) === 'BUY' ? 'var(--up)' : 'var(--dn)'};color:${mktDir(r) === 'BUY' ? 'var(--up)' : '#ffb3b3'}">⚡ ABHI ENTRY — ${mktDir(r)} MARKET (turant, live bhaav pe)</button>` : ''}` : ''}`;
   if(go && $('anMkt')) $('anMkt').onclick = sendMkt;
   if(go){ $('anSend').onclick = () => sendAn(false); $('anRev').onclick = () => sendAn(true); $('anTook').onclick = () => { REC.addFib(AN, true); alert('Records me likh diya') } }
 }
+/* ---------- 📊 chart (TradingView Lightweight Charts) — candles + auto Fib + golden zone + order line ---------- */
+let CH = null, CS = null, LINE = null, PL = [], ZONE = null, TF = LS.get('anTf', '15min');
+const IST = 19800;                                         /* chart ka samay IST me (+5:30) */
+const tsec = ms => Math.floor(ms / 1000) + IST;
+function chartInit(){
+  if(CH || !window.LightweightCharts) return !!CH;
+  const el = $('anChart'), LC = window.LightweightCharts;
+  CH = LC.createChart(el, {autoSize: true, layout: {background: {color: '#0e1420'}, textColor: '#8d9bb0', fontSize: 11},
+    grid: {vertLines: {color: '#1a2333'}, horzLines: {color: '#1a2333'}}, rightPriceScale: {borderColor: '#243045'},
+    timeScale: {borderColor: '#243045', timeVisible: true, secondsVisible: false, rightOffset: 4,
+      tickMarkFormatter: (t, k) => { const d = new Date(t * 1000), p = n => String(n).padStart(2, '0');
+        return k <= 2 ? p(d.getUTCDate()) + '/' + p(d.getUTCMonth() + 1) : p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) }},
+    crosshair: {mode: 0},
+    /* phone/browser ki ajeeb language setting se chart na toote — apna formatter */
+    localization: {locale: 'en-GB', timeFormatter: t => { const d = new Date(t * 1000), p = n => String(n).padStart(2, '0');
+      return p(d.getUTCDate()) + '/' + p(d.getUTCMonth() + 1) + ' ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) }}});
+  CS = CH.addCandlestickSeries({upColor: '#22c58b', downColor: '#ff5d5d', borderVisible: false, wickUpColor: '#22c58b', wickDownColor: '#ff5d5d'});
+  LINE = CH.addLineSeries({color: '#e8c35a', lineWidth: 2, lineStyle: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false});
+  ZONE = document.createElement('div'); ZONE.id = 'anZone'; ZONE.innerHTML = '<span>GOLDEN ZONE</span>'; ZONE.style.display = 'none'; el.appendChild(ZONE);
+  const upd = () => requestAnimationFrame(zoneDraw);
+  CH.timeScale().subscribeVisibleLogicalRangeChange(upd); CH.subscribeCrosshairMove(upd); new ResizeObserver(upd).observe(el);
+  document.querySelectorAll('#anTf [data-tf]').forEach(b => b.onclick = () => { TF = b.dataset.tf; LS.set('anTf', TF); drawChart() });
+  return true;
+}
+function zoneDraw(){
+  const r = AN; if(!ZONE || !CS || !r || !r.leg){ if(ZONE) ZONE.style.display = 'none'; return }
+  const y1 = CS.priceToCoordinate(r.leg.golden[1]), y0 = CS.priceToCoordinate(r.leg.golden[0]);
+  if(y1 == null || y0 == null){ ZONE.style.display = 'none'; return }
+  const w = CH.timeScale().width();
+  Object.assign(ZONE.style, {display: 'block', top: Math.min(y0, y1) + 'px', height: Math.max(6, Math.abs(y0 - y1)) + 'px', width: w + 'px', right: 'auto'});
+}
+function drawChart(){
+  const r = AN, card = $('anChartCard'); if(!r || !r.chart) return;
+  card.classList.remove('hide');
+  if(!chartInit()){ $('anLegend').textContent = 'Chart library load nahi hui — ⟳ dabao'; return }
+  document.querySelectorAll('#anTf [data-tf]').forEach(b => b.classList.toggle('on', b.dataset.tf === TF));
+  const sym = r.sym, sp = SPECS[sym], bars = (r.chart[TF] || []);
+  CS.applyOptions({priceFormat: {type: 'custom', minMove: Math.pow(10, -sp.digits), formatter: v => (+v).toFixed(sp.digits)}});
+  CS.setData(bars.map(b => ({time: tsec(b.t), open: b.o, high: b.h, low: b.l, close: b.c})));
+  PL.forEach(x => CS.removePriceLine(x)); PL = [];
+  LINE.setData([]); CS.setMarkers([]);
+  const leg = r.leg, ok = r.legs.filter(L => L.ok);
+  if(leg){
+    const LV = {0: ['0% (swing ' + (leg.dir === 'UP' ? 'high' : 'low') + ')', '#c9ced6', 1, 0], 0.236: ['23.6%', '#5d6b80', 1, 2], 0.382: ['38.2%', '#8d9bb0', 1, 2], 0.5: ['50%', '#8d9bb0', 1, 2],
+      0.618: ['61.8% GOLDEN', '#e8c35a', 3, 0], 0.65: ['65%', '#c9971f', 1, 1], 0.786: ['78.6% toota', '#ff5d5d', 1, 2], 1: ['100% (swing ' + (leg.dir === 'UP' ? 'low' : 'high') + ')', '#c9ced6', 1, 0]};
+    leg.levels.forEach(x => { const o = LV[x.r]; PL.push(CS.createPriceLine({price: x.px, color: o[1], lineWidth: o[2], lineStyle: o[3], axisLabelVisible: [0, 0.618, 0.786, 1].includes(x.r), title: o[0]})) });
+    ok.filter(L => Math.abs(L.entry - leg.lvl618) > 1e-12).forEach(L => PL.push(CS.createPriceLine({price: L.entry, color: L.dir === 'BUY' ? '#22c58b' : '#ff5d5d', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: L.dir + ' ' + L.kind})));
+    /* swing A -> B line + markers (sirf jab us TF me wo samay ho) */
+    const A = tsec(leg.start.t), B = tsec(leg.end.t), have = new Set(bars.map(b => tsec(b.t)));
+    const snap = t => { let best = null; for(const b of bars){ const x = tsec(b.t); if(x <= t) best = x } return best };
+    const a = have.has(A) ? A : snap(A), b = have.has(B) ? B : snap(B);
+    if(a != null && b != null && b > a){
+      LINE.setData([{time: a, value: leg.start.px}, {time: b, value: leg.end.px}]);
+      const up = leg.dir === 'UP';
+      CS.setMarkers([{time: a, position: up ? 'belowBar' : 'aboveBar', color: '#e8c35a', shape: up ? 'arrowUp' : 'arrowDown', text: 'Swing A'},
+        {time: b, position: up ? 'aboveBar' : 'belowBar', color: '#e8c35a', shape: up ? 'arrowDown' : 'arrowUp', text: 'Swing B'}]);
+    }
+    CS.applyOptions({autoscaleInfoProvider: org => { const o = org(); if(!o) return o;
+      const lo = Math.min(leg.start.px, leg.end.px, leg.invalid), hi = Math.max(leg.start.px, leg.end.px, leg.invalid);
+      return {priceRange: {minValue: Math.min(o.priceRange.minValue, lo), maxValue: Math.max(o.priceRange.maxValue, hi)}, margins: o.margins} }});
+  }else CS.applyOptions({autoscaleInfoProvider: org => org()});
+  PL.push(CS.createPriceLine({price: r.live, color: '#5aa9ff', lineWidth: 1, lineStyle: 3, axisLabelVisible: true, title: 'LIVE'}));
+  /* dikhne wala hissa: aakhri ~90 candle, swing A shuru se pehle tak */
+  const n = bars.length, ai = leg ? bars.findIndex(b => b.t >= leg.start.t) : -1;
+  CH.timeScale().setVisibleLogicalRange({from: Math.max(0, Math.min(n - 90, ai >= 0 ? ai - 8 : n - 90)), to: n + 4});
+  $('anChartTtl').textContent = `${sp.name} · ${{'5min': '5m', '15min': '15m', '1h': '1H'}[TF]} · ${r.src === 'mt5' ? '📡 MT5' : 'TwelveData'}`;
+  $('anLegend').innerHTML = leg
+    ? `🟡 Golden zone 61.8–65% · Fib swing 15m: ${fmt(sym, leg.start.px)} → ${fmt(sym, leg.end.px)}${ok.length ? ' · order: ' + ok.map(L => `<b class="${L.dir === 'BUY' ? 'buy' : 'sell'}">${L.dir} ${L.kind}</b> @ ${fmt(sym, L.entry)}`).join(' + ') : ' · <b>NO TRADE</b>'} · samay IST`
+    : `⏸ ${esc(r.why[r.why.length - 1] || 'NO TRADE')} — Fib nahi bana · samay IST`;
+  requestAnimationFrame(zoneDraw);
+}
+
 async function sendAn(rev){
   const r = AN; if(!r) return;
   if(Date.now() - r.dataTime > 15 * 60000){ alert('Analysis purana — dobara AUTO ANALYZE karo'); return }
@@ -178,7 +252,7 @@ async function sendAn(rev){
   if(all.length && !use.length){ alert('Settings me koi account tick nahi hai'); return }
   const legs = r.legs.filter(L => L.ok).map(L => rev ? flipLeg(L) : L);
   const names = use.map(a => `${a.login} (${a.real ? 'REAL' : 'DEMO'})`).join(', ');
-  if(!confirm((rev ? '🔄 ULTA ORDER — analysis ke ulta, usi bhaav pe\n⚠ Backtest (naya-trend niyam): ulta = nuksaan (~−$0.10/trade)\n\n' : '') + `${SPECS[r.sym].name} · ${legs.map(L => `${L.dir} ${L.kind} @ ${fmt(r.sym, L.entry)}`).join(' + ')}\nAccount: ${names || 'har account (bina tag)'}\n\nJo pehle bhare, doosra cancel · 60 min expiry · lot/TP/SL/lock: EA ke niyam.\nBhejein?`)) return;
+  if(!confirm((rev ? '🔄 ULTA ORDER — analysis ke ulta, usi bhaav pe\n⚠ Backtest (naya-trend niyam): ulta = nuksaan (~−$0.10/trade)\n\n' : '') + `${SPECS[r.sym].name} · ${legs.map(L => `${L.dir} ${L.kind} @ ${fmt(r.sym, L.entry)}`).join(' + ')}\nAccount: ${names || 'har account (bina tag)'}\n\n${legs.length > 1 ? 'Jo pehle bhare, doosra cancel · ' : ''}60 min expiry · lot/TP/SL/lock: EA ke niyam.\nBhejein?`)) return;
   const ok = [], fail = [];
   for(const a of (use.length ? use : [null])){
     try{ await sendBatch(S, r, a ? String(a.login) : undefined, rev); ok.push(a ? a.login : 'sab') }
@@ -263,6 +337,7 @@ async function renderSet(){
   const f = S.fromSamu, y = v => v ? '✅' : '—';
   $('importBox').innerHTML = `TwelveData key ${y(f.tdKey)} · Gemini key ${y(f.gKey)} · Firebase URL ${f.fbUrl ? '✅' : '✅ (default)'} · Firebase auth ${y(f.fbAuth)} · Telegram ${y(f.tg)}`;
   const ov = LS.get('ov', {}); $('ovTd').value = ov.tdKey || ''; $('ovFb').value = ov.fbUrl || ''; $('ovAuth').value = ov.fbAuth || '';
+  $('sOrd').value = LS.get('anOrd', 'swing');
   const c = CFG(); $('sSuffix').value = SUFFIX(); $('sH1').value = c.h1Mode; $('sRR').value = c.minRR; $('sSlAtr').value = c.slAtr; $('sLot').value = LOT(); $('sCom').value = c.commissionPips; $('sSlip').value = c.slippagePips;
   const acc = await accounts(S), off = LS.get('acctOff', []);
   $('sAccts').innerHTML = acc.length ? acc.map(a => `<label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--txt)"><input type="checkbox" style="width:auto" data-acct="${esc(a.login)}" ${off.includes(String(a.login)) ? '' : 'checked'}>
@@ -274,6 +349,7 @@ async function renderSet(){
 function saveSet(){
   LS.set('ov', {tdKey: $('ovTd').value.trim(), fbUrl: $('ovFb').value.trim(), fbAuth: $('ovAuth').value.trim()});
   LS.set('suffix', $('sSuffix').value.trim());
+  LS.set('anOrd', $('sOrd').value === 'swing' ? 'swing' : 'gold');
   LS.set('cfg', {h1Mode: $('sH1').value, minRR: Math.max(0.5, +$('sRR').value || 1.5), slAtr: Math.max(0, +$('sSlAtr').value || 0.3),
     commissionPips: Math.max(0, +$('sCom').value || 0), slippagePips: Math.max(0, +$('sSlip').value || 0)});
   LS.set('lot', Math.max(0.01, +$('sLot').value || 0.01));
