@@ -49,10 +49,10 @@ export {distToUsd};
 
 /* 📈 Chart Analysis (Fib LIMIT/STOP) records — PERSONAL FX Strategy 2 niyam se hisaab:
    60 min me pehla bhara order; phir -$3 SL / +$3 TP / +$1 pe +$0.50 lock (har $0.10 aage). 0.01 lot pe $. */
-export function addFib(plan, sent){
-  const a = list('fib');
-  a.unshift({id: plan.sym + '|' + Date.now(), sym: plan.sym, at: Date.now(), mode: plan.mode, sent: !!sent,
-    legs: plan.legs.filter(L => L.ok).map(L => ({dir: L.dir, kind: L.kind, entry: L.entry})), res: null});
+export function addFib(plan, sent, rev){
+  const a = list('fib'), fl = L => rev ? {dir: L.dir === 'BUY' ? 'SELL' : 'BUY', kind: L.kind === 'LIMIT' ? 'STOP' : 'LIMIT', entry: L.entry} : {dir: L.dir, kind: L.kind, entry: L.entry};
+  a.unshift({id: plan.sym + '|' + Date.now(), sym: plan.sym, at: Date.now(), mode: plan.mode, sent: !!sent, rev: !!rev,
+    legs: plan.legs.filter(L => L.ok).map(fl), res: null});
   put('fib', a);
 }
 export function settleFib(rec, bars5, usd1, spread){
