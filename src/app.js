@@ -7,7 +7,7 @@ import {chartAnalyze} from './mtf.js';
 import {usdToDist} from './symbols.js';
 import * as REC from './records.js';
 
-export const VERSION = '0.2.2';
+export const VERSION = '0.2.3';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const fmt = (sym, v) => v == null || !isFinite(v) ? '—' : (+v).toFixed(SPECS[sym] ? SPECS[sym].digits : 5);
