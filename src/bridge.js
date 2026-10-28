@@ -8,6 +8,14 @@ import {SPECS} from './symbols.js';
 import {fbUrl} from './data.js';
 
 
+/* Order apni key se (POST ki random key nahi): key me kism, jo EA MT5 comment ("PFXA"+key) me likhta hai aur
+   Watcher GitHub pe le jaata hai — har trade ka record pehchaan me. -FN Fib LIMIT/STOP · -FU ULTA · -FA ABHI · -FC Confirm. */
+export function orderKey(tag, now = Date.now()){
+  const r = Array.from(crypto.getRandomValues(new Uint8Array(9)), x => (x % 36).toString(36)).join('');
+  return ('-F' + tag + now.toString(36) + r).slice(0, 20);
+}
+const put = (s, tag, body) => fetch(fbUrl(s, 'personalfx/orders/' + orderKey(tag)), {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+
 export async function accounts(s){
   const u = fbUrl(s, 'personalfx/accounts'); if(!u) return [];
   try{ const r = await fetch(u, {cache: 'no-store'}); const j = r.ok ? await r.json() : null;
@@ -22,7 +30,7 @@ export async function sendOrder(s, sig, live, acct){
   const body = {id: now, pair: sp.name, type: sig.dir + 'MARKET', entry: +(+live).toFixed(sp.digits), live: +(+live).toFixed(sp.digits),
     at: now, exp: 5, status: 'NEW', src: 'SamuSignal Pro FIB', batch: 'F' + now.toString(36), leg: 1, legs: 1};
   if(acct) body.acct = acct;
-  const r = await fetch(fbUrl(s, 'personalfx/orders'), {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+  const r = await put(s, 'C', body);
   if(!r.ok) throw new Error(r.status === 401 || r.status === 403 ? 'Firebase ne mana kiya (auth)' : 'HTTP ' + r.status);
   return body;
 }
@@ -35,7 +43,7 @@ export async function sendMarket(s, plan, acct){
   const body = {id: now, pair: sp.name, type: dir + 'MARKET', entry: 0, live: +(+plan.live).toFixed(sp.digits),
     at: now, exp: 60, status: 'NEW', src: 'SamuSignal Pro FIB ABHI', batch: 'F' + now.toString(36), leg: 1, legs: 1};
   if(acct) body.acct = acct;
-  const r = await fetch(fbUrl(s, 'personalfx/orders'), {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+  const r = await put(s, 'A', body);
   if(!r.ok) throw new Error(r.status === 401 || r.status === 403 ? 'Firebase ne mana kiya (auth)' : 'HTTP ' + r.status);
   return body;
 }
@@ -53,7 +61,7 @@ export async function sendBatch(s, plan, acct, rev){
     const body = {id: now + k, pair: sp.name, type: L.dir + L.kind, entry: +(+L.entry).toFixed(sp.digits), live: +(+plan.live).toFixed(sp.digits),
       at: now, exp: 60, status: 'NEW', src: 'SamuSignal Pro FIB' + (rev ? ' ULTA' : ''), batch, leg: k + 1, legs: legs.length};
     if(acct) body.acct = acct;
-    const r = await fetch(fbUrl(s, 'personalfx/orders'), {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+    const r = await put(s, rev ? 'U' : 'N', body);
     if(!r.ok) throw new Error((sent.length ? `${sent.length} gaya, baaki fail — ` : '') + (r.status === 401 || r.status === 403 ? 'Firebase ne mana kiya (auth)' : 'HTTP ' + r.status));
     sent.push(body);
   }
