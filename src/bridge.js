@@ -27,6 +27,19 @@ export async function sendOrder(s, sig, live, acct){
   return body;
 }
 
+/* ⚡ ABHI ENTRY — Chart Analysis ki disha me turant MARKET (LIMIT/STOP ka intezaar nahi). EA broker ke bhaav pe bharta hai. */
+export const mktDir = plan => { const g = plan.legs.filter(L => L.ok); return g.length && g.every(L => L.dir === g[0].dir) ? g[0].dir : '' };
+export async function sendMarket(s, plan, acct){
+  const dir = mktDir(plan); if(!dir) throw new Error('Disha pakki nahi (RANGE)');
+  const sp = SPECS[plan.sym], now = Date.now();
+  const body = {id: now, pair: sp.name, type: dir + 'MARKET', entry: 0, live: +(+plan.live).toFixed(sp.digits),
+    at: now, exp: 60, status: 'NEW', src: 'SamuSignal Pro FIB ABHI', batch: 'F' + now.toString(36), leg: 1, legs: 1};
+  if(acct) body.acct = acct;
+  const r = await fetch(fbUrl(s, 'personalfx/orders'), {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+  if(!r.ok) throw new Error(r.status === 401 || r.status === 403 ? 'Firebase ne mana kiya (auth)' : 'HTTP ' + r.status);
+  return body;
+}
+
 /* 📈 Chart Analysis ka batch (Fib LIMIT + STOP) -> PERSONAL FX. SamuSignal jaisa: ek "batch", jo pehle
    bhare EA baaki cancel karta hai (AppBatchOCO). 60 min me na bhare to EA hata deta hai. */
 /* ULTA: usi bhaav pe ulti disha — BUY LIMIT -> SELL STOP, BUY STOP -> SELL LIMIT (aur ulta) */

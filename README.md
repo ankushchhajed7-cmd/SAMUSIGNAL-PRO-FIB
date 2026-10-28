@@ -40,6 +40,8 @@ Fibonacci **61.8% retracement** signal app, sirf **Forex** (Gold / Silver / BTC 
 | Strategy 2 $/trade (hafta A / B) | +0.19 / +0.15 | +0.21 / +0.26 |
 
   Fib thoda behtar per trade, lekin ~⅓ trade aur farq chhota — **saabit fayda nahi**, pehle demo pe parkho.
+- **⚡ ABHI ENTRY (v0.2.2):** LIMIT/STOP ke saath ek button — analysis ki disha me turant `BUYMARKET`/`SELLMARKET` (EA broker ke bhaav pe).
+  RANGE (mili-juli disha) me nahi; analysis 5 min se purana ho to nahi. Records me ⚡ alag. Backtest: jeet LIMIT/STOP jitni, +$1 thoda der se.
 - "🔍 Confirm" tab = purana tarika (zone → rejection candle → MARKET).
 
 ## Tests

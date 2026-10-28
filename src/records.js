@@ -49,10 +49,10 @@ export {distToUsd};
 
 /* 📈 Chart Analysis (Fib LIMIT/STOP) records — PERSONAL FX Strategy 2 niyam se hisaab:
    60 min me pehla bhara order; phir -$3 SL / +$3 TP / +$1 pe +$0.50 lock (har $0.10 aage). 0.01 lot pe $. */
-export function addFib(plan, sent, rev){
+export function addFib(plan, sent, rev, mkt){
   const a = list('fib'), fl = L => rev ? {dir: L.dir === 'BUY' ? 'SELL' : 'BUY', kind: L.kind === 'LIMIT' ? 'STOP' : 'LIMIT', entry: L.entry} : {dir: L.dir, kind: L.kind, entry: L.entry};
   a.unshift({id: plan.sym + '|' + Date.now(), sym: plan.sym, at: Date.now(), mode: plan.mode, sent: !!sent, rev: !!rev,
-    legs: plan.legs.filter(L => L.ok).map(fl), res: null});
+    legs: mkt ? [{dir: mkt, kind: 'MARKET', entry: plan.live}] : plan.legs.filter(L => L.ok).map(fl), res: null, mkt: !!mkt});
   put('fib', a);
 }
 export function settleFib(rec, bars5, usd1, spread){
@@ -60,7 +60,7 @@ export function settleFib(rec, bars5, usd1, spread){
   for(const b of bars5){
     if(b.t < rec.at || b.t > rec.at + 3600e3) continue;        /* order ke baad khuli candles hi */
     for(const L of rec.legs){ const buy = L.dir === 'BUY';
-      const hit = L.kind === 'LIMIT' ? (buy ? b.l <= L.entry - h : b.h >= L.entry + h) : (buy ? b.h >= L.entry + h : b.l <= L.entry - h);
+      const hit = L.kind === 'MARKET' ? true : L.kind === 'LIMIT' ?        /* ⚡ ABHI = pehli candle pe bhara */ (buy ? b.l <= L.entry - h : b.h >= L.entry + h) : (buy ? b.h >= L.entry + h : b.l <= L.entry - h);
       if(hit){ fill = {L, t: b.t}; break } }
     if(fill) break;
   }
