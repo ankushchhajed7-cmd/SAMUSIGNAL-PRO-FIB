@@ -7,7 +7,7 @@ import {chartAnalyze} from './mtf.js';
 import {usdToDist} from './symbols.js';
 import * as REC from './records.js';
 
-export const VERSION = '0.3.1';
+export const VERSION = '0.3.2';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const fmt = (sym, v) => v == null || !isFinite(v) ? '—' : (+v).toFixed(SPECS[sym] ? SPECS[sym].digits : 5);
@@ -162,6 +162,7 @@ function renderAn(){
       <div><span>Setup toota (78.6%)</span><span class="mono">${fmt(sym, r.leg.invalid)}</span></div>` : ''}
       ${go ? `<div><span>+$1 (0.01 lot) andaza</span>${eta(r.eta)}</div><div><span>Pending expiry</span>60 min</div>` : ''}
     </div>
+    ${go && r.trends.adx15 >= 30 ? `<p class="hint" style="border:1px solid var(--up);border-radius:8px;padding:6px 9px;color:var(--up);font-weight:700">⭐ Mazboot trend (15m ADX ${r.trends.adx15}) — backtest me kam minus aur +$1 jaldi <small style="color:var(--mut);font-weight:400">· 10 me ~1.8 minus (baaki ~2.2)</small></p>` : ''}
     ${r.legs.map(L => `<div style="border:1px ${L.ok ? 'solid' : 'dashed'} ${L.ok ? (L.dir === 'BUY' ? 'var(--up)' : 'var(--dn)') : 'var(--line)'};border-radius:10px;padding:9px 11px;margin-top:8px;${L.ok ? '' : 'opacity:.6'}">
         <div class="row"><b class="${L.dir === 'BUY' ? 'buy' : 'sell'}" style="${L.ok ? '' : 'text-decoration:line-through'}">${L.dir} ${L.kind}</b><b class="mono" style="margin-left:auto">${fmt(sym, L.entry)}</b></div>
         <p class="hint" style="margin:4px 0 0">${esc(L.why)} · live se ${pips(L.entry - r.live)} pips ${L.entry > r.live ? 'upar' : 'neeche'} ($${distToUsd(sym, L.entry - r.live, 0.01).toFixed(2)} / 0.01)${L.ok ? '' : ' · ✗ ' + esc(L.bad)}</p></div>`).join('')}
