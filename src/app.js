@@ -7,7 +7,7 @@ import {chartAnalyze} from './mtf.js';
 import {usdToDist} from './symbols.js';
 import * as REC from './records.js';
 
-export const VERSION = '0.3.0';
+export const VERSION = '0.3.1';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const fmt = (sym, v) => v == null || !isFinite(v) ? '—' : (+v).toFixed(SPECS[sym] ? SPECS[sym].digits : 5);
@@ -195,6 +195,7 @@ function chartInit(){
   const upd = () => requestAnimationFrame(zoneDraw);
   CH.timeScale().subscribeVisibleLogicalRangeChange(upd); CH.subscribeCrosshairMove(upd); new ResizeObserver(upd).observe(el);
   document.querySelectorAll('#anTf [data-tf]').forEach(b => b.onclick = () => { TF = b.dataset.tf; LS.set('anTf', TF); drawChart() });
+  $('anFit').onclick = () => drawChart();
   return true;
 }
 function zoneDraw(){
@@ -210,6 +211,9 @@ function drawChart(){
   if(!chartInit()){ $('anLegend').textContent = 'Chart library load nahi hui — ⟳ dabao'; return }
   document.querySelectorAll('#anTf [data-tf]').forEach(b => b.classList.toggle('on', b.dataset.tf === TF));
   const sym = r.sym, sp = SPECS[sym], bars = (r.chart[TF] || []);
+  /* v0.3.1: ungli se price scale khincha ho to chart "auto scale" band kar deta hai — agla pair (alag bhaav) screen ke bahar
+     chala jaata tha (khaali chart). Har naye analysis / TF pe auto scale wapas chalu. */
+  CH.priceScale('right').applyOptions({autoScale: true});
   CS.applyOptions({priceFormat: {type: 'custom', minMove: Math.pow(10, -sp.digits), formatter: v => (+v).toFixed(sp.digits)}});
   CS.setData(bars.map(b => ({time: tsec(b.t), open: b.o, high: b.h, low: b.l, close: b.c})));
   PL.forEach(x => CS.removePriceLine(x)); PL = [];
